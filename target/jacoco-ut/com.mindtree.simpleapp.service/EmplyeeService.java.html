@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EmplyeeService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">simpleapp</a> &gt; <a href="index.source.html" class="el_package">com.mindtree.simpleapp.service</a> &gt; <span class="el_source">EmplyeeService.java</span></div><h1>EmplyeeService.java</h1><pre class="source lang-java linenums">package com.mindtree.simpleapp.service;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.mindtree.simpleapp.entity.Employee;
+import com.mindtree.simpleapp.exception.service.EmployeeNotFoundException;
+import com.mindtree.simpleapp.exception.service.EmployeeNotNullException;
+import com.mindtree.simpleapp.exception.service.ServiceException;
+
+/**
+ * 
+ * @author M1057719 Created HashMap to store employee details.
+ */
+
+public class EmplyeeService {
+
+	private Map&lt;UUID, Employee&gt; employees;
+	private ListeningExecutorService service;
+
+<span class="fc" id="L27">	public EmplyeeService() {</span>
+<span class="fc" id="L28">		employees = new ConcurrentHashMap&lt;UUID, Employee&gt;();</span>
+<span class="fc" id="L29">		service = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10));</span>
+<span class="fc" id="L30">	}</span>
+
+	/**
+	 * This method will return list of employee.
+	 * 
+	 * @return Employee
+	 */
+	public Collection&lt;Employee&gt; getEmployees() {
+<span class="fc" id="L38">		return (employees.values());</span>
+	}
+
+	public ListenableFuture&lt;Collection&lt;Employee&gt;&gt; getEmployeesAsync() {
+<span class="fc" id="L42">		ListenableFuture&lt;Collection&lt;Employee&gt;&gt; future = service.submit(new Callable&lt;Collection&lt;Employee&gt;&gt;() {</span>
+			public Collection&lt;Employee&gt; call() throws Exception {
+<span class="fc" id="L44">				return getEmployees();</span>
+			}
+		});
+<span class="fc" id="L47">		return future;</span>
+	}
+
+	/**
+	 * This method takes an id as parameter and if employee is not present to that
+	 * particular id then it will through an exception otherwise wise fetch the data
+	 * and return it.
+	 * 
+	 * @param id
+	 * @return
+	 * @throws EmployeeNotFoundException
+	 */
+	Employee deleteEmployee(UUID id) throws ServiceException {
+
+<span class="fc bfc" id="L61" title="All 2 branches covered.">		if (employees.containsKey(id)) {</span>
+<span class="fc" id="L62">			Employee reValue = employees.get(id);</span>
+<span class="fc" id="L63">			employees.remove(id);</span>
+<span class="fc" id="L64">			return reValue;</span>
+		} else {
+			// System.out.println(&quot;Employee &quot;+id+&quot; Not found&quot;);
+<span class="fc" id="L67">			throw new EmployeeNotFoundException(&quot;Employee &quot; + id + &quot; Not found&quot;);</span>
+		}
+
+	}
+
+	public ListenableFuture&lt;Employee&gt; deleteEmployeeAsync(final UUID id) {
+<span class="fc" id="L73">		ListenableFuture&lt;Employee&gt; future = service.submit(new Callable&lt;Employee&gt;() {</span>
+			public Employee call() throws Exception {
+<span class="fc" id="L75">				return deleteEmployee(id);</span>
+			}
+		});
+<span class="fc" id="L78">		return future;</span>
+	}
+
+	/**
+	 * this method take id as parameter and retun that particular employee
+	 * 
+	 * @param id
+	 * @return employee detail
+	 * @throws EmployeeNotFoundException
+	 */
+	Employee getEmployee(UUID id) throws EmployeeNotFoundException {
+
+<span class="fc bfc" id="L90" title="All 2 branches covered.">		if (employees.containsKey(id)) {</span>
+<span class="fc" id="L91">			System.out.println(employees);</span>
+<span class="fc" id="L92">			return (employees.get(id));</span>
+		} else {
+			// System.out.println(&quot;Employee &quot;+id+&quot; Not found&quot;);
+<span class="fc" id="L95">			throw new EmployeeNotFoundException(&quot;Employee &quot; + id + &quot; Not found&quot;);</span>
+		}
+
+	}
+
+	public ListenableFuture&lt;Employee&gt; getEmployeeAsync(final UUID id) {
+<span class="fc" id="L101">		ListenableFuture&lt;Employee&gt; future = service.submit(new Callable&lt;Employee&gt;() {</span>
+			public Employee call() throws Exception {
+<span class="fc" id="L103">				return getEmployee(id);</span>
+			}
+		});
+<span class="fc" id="L106">		return future;</span>
+	}
+
+	Employee addEmployee(Employee employee) throws ServiceException {
+<span class="fc bfc" id="L110" title="All 2 branches covered.">		if (employee != null) {</span>
+<span class="fc" id="L111">			employee.setId(UUID.randomUUID());</span>
+<span class="fc" id="L112">			employees.put(employee.getId(), employee);</span>
+<span class="fc" id="L113">			return employee;</span>
+		}else {
+<span class="fc" id="L115">			throw new EmployeeNotNullException(&quot;Employee data should not be null&quot;);</span>
+		}
+
+	}
+
+	public ListenableFuture&lt;Employee&gt; addEmployeeAsync(final Employee employee) {
+<span class="fc" id="L121">		ListenableFuture&lt;Employee&gt; future = service.submit(new Callable&lt;Employee&gt;() {</span>
+			public Employee call() throws Exception {
+<span class="fc" id="L123">				return addEmployee(employee);</span>
+			}
+		});
+<span class="fc" id="L126">		return future;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

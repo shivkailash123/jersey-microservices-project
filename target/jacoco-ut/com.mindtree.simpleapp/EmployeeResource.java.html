@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EmployeeResource.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">simpleapp</a> &gt; <a href="index.source.html" class="el_package">com.mindtree.simpleapp</a> &gt; <span class="el_source">EmployeeResource.java</span></div><h1>EmployeeResource.java</h1><pre class="source lang-java linenums">package com.mindtree.simpleapp;
+
+import java.util.Collection;
+import java.util.UUID;
+import java.util.concurrent.Future;
+
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.mindtree.simpleapp.EmployeeDao;
+
+import javax.validation.Valid;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.Suspended;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import org.glassfish.jersey.server.ManagedAsync;
+
+@Path(&quot;/employee&quot;)
+<span class="fc" id="L29">public class EmployeeResource {</span>
+	// EmployeeDao dao = new EmployeeDao();
+	@Context
+	EmployeeDao dao;
+
+	@GET
+	@Produces({&quot;application/json;qs=1&quot;,&quot;application/xml;qs=0.5&quot;})
+	@ManagedAsync
+	public void getEmployee(@Suspended final AsyncResponse response) {
+<span class="fc" id="L38">		response.resume(dao.getEmployees());</span>
+<span class="fc" id="L39">		ListenableFuture&lt;Collection&lt;Employee&gt;&gt; employeeFuture = dao.getEmployeesAsync();</span>
+<span class="fc" id="L40">		Futures.addCallback(employeeFuture, new FutureCallback&lt;Collection&lt;Employee&gt;&gt;() {</span>
+			public void onSuccess(Collection&lt;Employee&gt; addedEmployee) {
+<span class="fc" id="L42">				response.resume(addedEmployee);</span>
+<span class="fc" id="L43">			}</span>
+			public void onFailure(Throwable thrown) {
+<span class="nc" id="L45">				response.resume(thrown);</span>
+<span class="nc" id="L46">			}</span>
+		});
+<span class="fc" id="L48">	}</span>
+
+	@Path(&quot;/{id}&quot;)
+	@GET
+	@Produces({&quot;application/json;qs=1&quot;,&quot;application/xml;qs=0.5&quot;})
+	@ManagedAsync
+	public void getEmployee(@PathParam(&quot;id&quot;) UUID id, @Suspended final AsyncResponse response) {
+<span class="fc" id="L55">		ListenableFuture&lt;Employee&gt; employeeFuture = dao.getEmployeeAsync(id);</span>
+<span class="fc" id="L56">		Futures.addCallback(employeeFuture, new FutureCallback&lt;Employee&gt;() {</span>
+			public void onSuccess(Employee addedEmployee) {
+<span class="fc" id="L58">				response.resume(addedEmployee);</span>
+<span class="fc" id="L59">			}</span>
+
+			public void onFailure(Throwable thrown) {
+<span class="fc" id="L62">				response.resume(thrown);</span>
+<span class="fc" id="L63">			}</span>
+		});
+<span class="fc" id="L65">	}</span>
+	
+    @Path(&quot;/{id}&quot;)
+    @DELETE
+    @Produces({&quot;application/json;qs=1&quot;,&quot;application/xml;qs=0.5&quot;})
+    @ManagedAsync
+    public void deleteEmployee(@PathParam(&quot;id&quot;) UUID id,  @Suspended final AsyncResponse response) {
+<span class="fc" id="L72">    	ListenableFuture&lt;Employee&gt; employeeFuture = dao.deleteEmployeeAsync(id);</span>
+<span class="fc" id="L73">		Futures.addCallback(employeeFuture, new FutureCallback&lt;Employee&gt;() {</span>
+			public void onSuccess(Employee deletedEmployee) {
+<span class="nc" id="L75">				response.resume(deletedEmployee);</span>
+<span class="nc" id="L76">			}</span>
+
+			public void onFailure(Throwable thrown) {
+<span class="fc" id="L79">				response.resume(thrown);</span>
+<span class="fc" id="L80">			}</span>
+		});
+<span class="fc" id="L82">    }</span>
+
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ManagedAsync
+	public void addEmployee(@Valid Employee employee, @Suspended final AsyncResponse response) {
+//		response.resume(dao.addEmployee(employee));
+<span class="fc" id="L90">		ListenableFuture&lt;Employee&gt; employeeFuture = dao.addEmployeeAsync(employee);</span>
+<span class="fc" id="L91">		Futures.addCallback(employeeFuture, new FutureCallback&lt;Employee&gt;() {</span>
+			public void onSuccess(Employee addedEmployee) {
+<span class="fc" id="L93">				response.resume(addedEmployee);</span>
+<span class="fc" id="L94">			}</span>
+
+			public void onFailure(Throwable thrown) {
+<span class="nc" id="L97">				response.resume(thrown);</span>
+<span class="nc" id="L98">			}</span>
+		});
+<span class="fc" id="L100">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

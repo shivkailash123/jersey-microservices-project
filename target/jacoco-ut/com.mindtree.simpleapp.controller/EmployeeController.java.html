@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EmployeeController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">simpleapp</a> &gt; <a href="index.source.html" class="el_package">com.mindtree.simpleapp.controller</a> &gt; <span class="el_source">EmployeeController.java</span></div><h1>EmployeeController.java</h1><pre class="source lang-java linenums">package com.mindtree.simpleapp.controller;
+
+import java.util.Collection;
+import java.util.UUID;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.mindtree.simpleapp.dao.EmployeeDao;
+import com.mindtree.simpleapp.entity.Employee;
+
+import javax.validation.Valid;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.Suspended;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import org.glassfish.jersey.server.ManagedAsync;
+
+/**
+ * 
+ * @author M1057719
+ *
+ */
+//Rest Endpoint
+@Path(&quot;/employee&quot;)
+<span class="fc" id="L32">public class EmployeeController {</span>
+
+	@Context
+	EmployeeDao dao;
+
+	/**
+	 * This method return list of Employee using Asynchronous method.
+	 * 
+	 * @param response
+	 */
+	@GET
+	@Produces({ &quot;application/json;qs=1&quot;, &quot;application/xml;qs=0.5&quot; })
+	@ManagedAsync
+	public void getEmployee(@Suspended final AsyncResponse response) {
+<span class="fc" id="L46">		response.resume(dao.getEmployees());</span>
+<span class="fc" id="L47">		ListenableFuture&lt;Collection&lt;Employee&gt;&gt; employeeFuture = dao.getEmployeesAsync();</span>
+<span class="fc" id="L48">		Futures.addCallback(employeeFuture, new FutureCallback&lt;Collection&lt;Employee&gt;&gt;() {</span>
+			public void onSuccess(Collection&lt;Employee&gt; addedEmployee) {
+<span class="fc" id="L50">				response.resume(addedEmployee);</span>
+<span class="fc" id="L51">			}</span>
+			public void onFailure(Throwable thrown) {
+<span class="nc" id="L53">				response.resume(thrown);</span>
+<span class="nc" id="L54">			}</span>
+		});
+<span class="fc" id="L56">	}</span>
+
+	/**
+	 * This method return specific employee detail using ID as a path parameter. If
+	 * employee details is not found then it will throw an exception. Employee not
+	 * found
+	 * 
+	 * @param id
+	 * @param response
+	 */
+	@Path(&quot;/{id}&quot;)
+	@GET
+	@Produces({ &quot;application/json;qs=1&quot;, &quot;application/xml;qs=0.5&quot; })
+	@ManagedAsync
+	public void getEmployee(@PathParam(&quot;id&quot;) UUID id, @Suspended final AsyncResponse response) {
+<span class="fc" id="L71">		ListenableFuture&lt;Employee&gt; employeeFuture = dao.getEmployeeAsync(id);</span>
+<span class="fc" id="L72">		Futures.addCallback(employeeFuture, new FutureCallback&lt;Employee&gt;() {</span>
+			public void onSuccess(Employee addedEmployee) {
+<span class="fc" id="L74">				response.resume(addedEmployee);</span>
+<span class="fc" id="L75">			}</span>
+
+			public void onFailure(Throwable thrown) {
+<span class="fc" id="L78">				response.resume(thrown);</span>
+<span class="fc" id="L79">			}</span>
+		});
+<span class="fc" id="L81">	}</span>
+
+	/**
+	 * This method take id as parameter and delete that particular employee from he
+	 * record if that employee is not found then it will through an exception.
+	 * @param id
+	 * @param response
+	 */
+	@Path(&quot;/{id}&quot;)
+	@DELETE
+	@Produces({ &quot;application/json;qs=1&quot;, &quot;application/xml;qs=0.5&quot; })
+	@ManagedAsync
+	public void deleteEmployee(@PathParam(&quot;id&quot;) UUID id, @Suspended final AsyncResponse response) {
+<span class="fc" id="L94">		ListenableFuture&lt;Employee&gt; employeeFuture = dao.deleteEmployeeAsync(id);</span>
+<span class="fc" id="L95">		Futures.addCallback(employeeFuture, new FutureCallback&lt;Employee&gt;() {</span>
+			public void onSuccess(Employee deletedEmployee) {
+<span class="fc" id="L97">				response.resume(deletedEmployee);</span>
+<span class="fc" id="L98">			}</span>
+
+			public void onFailure(Throwable thrown) {
+<span class="fc" id="L101">				response.resume(thrown);</span>
+<span class="fc" id="L102">			}</span>
+		});
+<span class="fc" id="L104">	}</span>
+	/**
+	 * This method take Employee data as parameter and add data to the list. By
+	 * using Asynchronous method
+	 * @param employee
+	 * @param response
+	 */
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ManagedAsync
+	public void addEmployee(@Valid Employee employee, @Suspended final AsyncResponse response) {
+<span class="fc" id="L116">		ListenableFuture&lt;Employee&gt; employeeFuture = dao.addEmployeeAsync(employee);</span>
+<span class="fc" id="L117">		Futures.addCallback(employeeFuture, new FutureCallback&lt;Employee&gt;() {</span>
+			public void onSuccess(Employee addedEmployee) {
+<span class="fc" id="L119">				response.resume(addedEmployee);</span>
+<span class="fc" id="L120">			}</span>
+
+			public void onFailure(Throwable thrown) {
+<span class="fc" id="L123">				response.resume(thrown);</span>
+<span class="fc" id="L124">			}</span>
+		});
+<span class="fc" id="L126">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>
